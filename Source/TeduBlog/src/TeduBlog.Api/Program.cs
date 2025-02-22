@@ -1,15 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Reflection;
 using TeduBlog.Api;
+using TeduBlog.Core.Domain.Content;
 using TeduBlog.Core.Domain.Identity;
+using TeduBlog.Core.SeedWorks;
 using TeduBlog.Data;
+using TeduBlog.Data.SeedWorks;
+using TeduBlog.Services.Implementation;
+using TeduBlog.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-// Add services to the container.
 
 //Config DB Context and ASP.NET Core Identity
 builder.Services.AddDbContext<AppDBContext>(options =>
@@ -39,13 +45,36 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
 });
 
+// Add services to the container.
+
+// mỗi request http có 1 instance
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IRepository<,>), typeof(RepositoryBase<,>));
+
+// Tạo mới mỗi lần gọi
+builder.Services.AddTransient<IPostService, PostService>();
+
+// Đăng ký AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Default config 
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomOperationIds(apiDesc =>
+    {
+        return apiDesc.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null;
+    });
+    c.SwaggerDoc("AdminAPI", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v1",
+        Title = "API for Administrators",
+        Description = "API for CMS core domain. This domain keeps track of campaigns, campaign rules, and campaign execution."
+    });
+});
 
 var app = builder.Build();
 
@@ -53,7 +82,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("AdminAPI/swagger.json", "Admin API");
+        c.DisplayOperationId();
+        c.DisplayRequestDuration();
+    });
 }
 
 app.UseHttpsRedirection();
