@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TeduBlog.WebApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5b49957badec375743c3eb29393b120371ca5fd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9fee13b2bbb7a0bf3b1103182c562faebfec44dd")]
 [assembly: System.Reflection.AssemblyProductAttribute("TeduBlog.WebApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TeduBlog.WebApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
