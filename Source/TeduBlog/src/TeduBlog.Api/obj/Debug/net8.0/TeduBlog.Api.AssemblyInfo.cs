@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TeduBlog.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9fee13b2bbb7a0bf3b1103182c562faebfec44dd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ad02458836b7a6ef5bdea5ccb6d1ba6667575fe6")]
 [assembly: System.Reflection.AssemblyProductAttribute("TeduBlog.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TeduBlog.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

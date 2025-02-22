@@ -59,7 +59,7 @@ namespace TeduBlog.Data
                     modifiedDateProp.SetValue(entityEntry.Entity, DateTime.Now);
                 }
             }
-            return base.SaveChangesAsync(cancellationToken);
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
     }
 }

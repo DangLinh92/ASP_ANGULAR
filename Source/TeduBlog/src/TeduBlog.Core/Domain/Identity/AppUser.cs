@@ -26,5 +26,12 @@ namespace TeduBlog.Core.Domain.Identity
         public DateTime? VipExpireDate { get; set; }
         public DateTime? LastLoginDate { get; set; }
         public double Balance { get; set; }
+
+        /// <summary>
+        /// Show password lên trong TH quên.
+        /// </summary>
+        [Required]
+        [MaxLength(150)]
+        public required string PasswordShow {  get; set; }
     }
 }
