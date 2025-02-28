@@ -1,28 +1,25 @@
-﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using TeduBlog.Api;
-using TeduBlog.Core.Domain.Content;
 using TeduBlog.Core.Domain.Identity;
+using TeduBlog.Core.Models.Content;
+using TeduBlog.Core.Repositories;
 using TeduBlog.Core.SeedWorks;
 using TeduBlog.Data;
+using TeduBlog.Data.Repositories;
 using TeduBlog.Data.SeedWorks;
-using TeduBlog.Services.Implementation;
-using TeduBlog.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-
 var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("DefaultConnection");
-
 //Config DB Context and ASP.NET Core Identity
-builder.Services.AddDbContext<AppDBContext>(options =>
-                options.UseSqlServer(connectionString, o => o.MigrationsAssembly("TeduBlog.Data")));
+builder.Services.AddDbContext<TeduBlogContext>(options =>
+                options.UseSqlServer(connectionString));
 
 builder.Services.AddIdentity<AppUser, AppRole>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<AppDBContext>();
+    .AddEntityFrameworkStores<TeduBlogContext>();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -36,29 +33,37 @@ builder.Services.Configure<IdentityOptions>(options =>
 
     // Lockout settings.
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 10; // sai 10 lần thì khóa
+    options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
 
     // User settings.
     options.User.AllowedUserNameCharacters =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";  // cho phép các ký tự 
-    options.User.RequireUniqueEmail = true;
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.User.RequireUniqueEmail = false;
 });
 
 // Add services to the container.
-
-// mỗi request http có 1 instance
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IRepository<,>), typeof(RepositoryBase<,>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// Tạo mới mỗi lần gọi
-builder.Services.AddTransient<IPostService, PostService>();
+// Business services and repositories
+var services = typeof(PostRepository).Assembly.GetTypes()
+    .Where(x => x.GetInterfaces().Any(i => i.Name == typeof(IRepository<,>).Name)
+    && !x.IsAbstract && x.IsClass && !x.IsGenericType);
 
-// Đăng ký AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
+foreach (var service in services)
+{
+    var allInterfaces = service.GetInterfaces();
+    var directInterface = allInterfaces.Except(allInterfaces.SelectMany(t => t.GetInterfaces())).FirstOrDefault();
+    if (directInterface != null)
+    {
+        builder.Services.Add(new ServiceDescriptor(directInterface, service, ServiceLifetime.Scoped));
+    }
+}
 
-// Default config 
+builder.Services.AddAutoMapper(typeof(PostInListDto));
 
+//Default config for ASP.NET Core
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -74,7 +79,6 @@ builder.Services.AddSwaggerGen(c =>
         Title = "API for Administrators",
         Description = "API for CMS core domain. This domain keeps track of campaigns, campaign rules, and campaign execution."
     });
-
     c.ParameterFilter<SwaggerNullableParameterFilter>();
 });
 
