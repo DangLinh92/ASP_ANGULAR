@@ -1,0 +1,10 @@
+<div class="wrapper-cart">
+  <h1>Shopping Cart</h1>
+
+  <div *ngIf="blogs$ | async as blogs">
+    <app-product-item
+      [products]="blogs"
+      (dataEvent)="handleDelete($event)"
+    ></app-product-item>
+  </div>
+</div>
