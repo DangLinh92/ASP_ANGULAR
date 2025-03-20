@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Http.Logging;
+using System.Net.Http;
 using TeduBlog.Api.Models;
 using TeduBlog.Core.Domain.Content;
 using TeduBlog.Services.Implementation;
@@ -13,13 +15,38 @@ namespace TeduBlog.Api.Controllers
     [ApiController]
     public class PostController : BaseController
     {
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IPostService _postService;
         private readonly IMapper _mapper;
 
-        public PostController(IPostService postService, IMapper mapper)
+        public PostController(IPostService postService, IMapper mapper, IHttpClientFactory httpClientFactory)
         {
+            _httpClientFactory = httpClientFactory;
             _postService = postService;
             _mapper = mapper;
+        }
+
+        [HttpGet("test-http")]
+        public async Task<IActionResult> TestHttpClient()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://jsonplaceholder.typicode.com/todos/1");
+
+            try
+            {
+                var httpClient = _httpClientFactory.CreateClient("LoggedClient");
+
+                var startTime = DateTime.UtcNow;
+                var response = await httpClient.SendAsync(request);
+                var elapsed = DateTime.UtcNow - startTime;
+
+                var content = await response.Content.ReadAsStringAsync();
+                return Ok(content);
+            }
+            catch (Exception ex)
+            {
+                var elapsed = TimeSpan.FromSeconds(1); // Giả sử thời gian request thất bại
+                return StatusCode(500, "Request failed.");
+            }
         }
 
         /// <summary>
@@ -61,7 +88,7 @@ namespace TeduBlog.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePost(Guid id, [FromBody] CreateUpdatePostRequest request)
         {
-            
+
             var post = await _postService.GetPostById(id);
             if (post == null)
             {
@@ -79,7 +106,7 @@ namespace TeduBlog.Api.Controllers
         {
             foreach (var id in ids)
             {
-               await _postService.DeletePost(id);
+                await _postService.DeletePost(id);
             }
             var result = await _postService.Save();
             return result > 0 ? Ok() : BadRequest();

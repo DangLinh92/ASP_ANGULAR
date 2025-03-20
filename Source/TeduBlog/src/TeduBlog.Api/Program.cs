@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Http.Logging;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using TeduBlog.Api;
@@ -56,6 +58,11 @@ builder.Services.AddTransient<IPostService, PostService>();
 
 // Đăng ký AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
+
+// Đăng ký HttpClient Logger
+builder.Services.AddSingleton<CustomHttpClientLogger>();
+builder.Services.AddHttpClient("LoggedClient").RemoveAllLoggers()
+        .AddLogger<CustomHttpClientLogger>();
 
 // Default config 
 
