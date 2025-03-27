@@ -1,0 +1,19 @@
+  <!-- <div>{{title.name}}</div>
+
+  <button [disabled]="isDisable"> Helllo word</button>
+
+  <img [src]="contentImage" alt="content image" />
+
+  <button (click)="handleClickMe()"> {{nameBtn}}</button>
+
+  <div>Message: {{clickMessage}}</div>
+
+  <input type="text" [(ngModel)]="bindingMessage"/>
+
+  <div>Message: {{bindingMessage}}</div> -->
+
+  <div class="wrapper-cart">
+    <h1 *ngIf="isVisible">Shopping Cart</h1>
+    <app-product-item [products] = "products" (dataEvent)="handleDelete($event)"></app-product-item>
+
+  </div>
